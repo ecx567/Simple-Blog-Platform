@@ -29,6 +29,11 @@
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'home' %}">Inicio</a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'post_list' %}">
+                            <i class="bi bi-journal-text"></i> Blog
+                        </a>
+                    </li>
                     {% if user.is_authenticated %}
                         <li class="nav-item">
                             <a class="nav-link" href="{% url 'dashboard' %}">
@@ -37,8 +42,13 @@
                         </li>
                         {% if user.can_publish %}
                         <li class="nav-item">
-                            <a class="nav-link" href="#">
+                            <a class="nav-link" href="{% url 'post_create' %}">
                                 <i class="bi bi-plus-circle"></i> Nueva Publicación
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'my_posts' %}">
+                                <i class="bi bi-file-earmark-text"></i> Mis Posts
                             </a>
                         </li>
                         {% endif %}

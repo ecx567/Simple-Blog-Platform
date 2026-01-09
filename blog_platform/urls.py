@@ -17,8 +17,8 @@ urlpatterns = [
     # Accounts (Autenticación)
     path('accounts/', include('accounts.urls')),
     
-    # Blog (se agregará después)
-    # path('blog/', include('blog.urls')),
+    # Blog
+    path('blog/', include('blog.urls')),
 ]
 
 # Servir archivos media y static en desarrollo

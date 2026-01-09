@@ -1,0 +1,168 @@
+{% extends 'base.html' %}
+
+{% block title %}Blog - Blog Platform{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Main Content -->
+    <div class="col-lg-8">
+        <h1 class="mb-4">
+            <i class="bi bi-journal-text"></i> Publicaciones
+        </h1>
+        
+        <!-- Search and Filters -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <form method="get" class="row g-3">
+                    <div class="col-md-6">
+                        <input type="text" name="q" class="form-control" 
+                               placeholder="Buscar publicaciones..." 
+                               value="{{ query|default:'' }}">
+                    </div>
+                    <div class="col-md-4">
+                        <select name="category" class="form-select">
+                            <option value="">Todas las categorías</option>
+                            {% for cat in categories %}
+                            <option value="{{ cat.slug }}" 
+                                    {% if current_category == cat.slug %}selected{% endif %}>
+                                {{ cat.name }} ({{ cat.post_count }})
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="bi bi-search"></i> Buscar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Posts List -->
+        {% if posts %}
+        <div class="row g-4">
+            {% for post in posts %}
+            <div class="col-md-6">
+                <div class="card h-100 shadow-sm">
+                    {% if post.featured_image %}
+                    <img src="{{ post.featured_image.url }}" class="card-img-top" alt="{{ post.title }}" style="height: 200px; object-fit: cover;">
+                    {% else %}
+                    <div class="card-img-top bg-secondary d-flex align-items-center justify-content-center" style="height: 200px;">
+                        <i class="bi bi-image text-white" style="font-size: 3rem;"></i>
+                    </div>
+                    {% endif %}
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title">
+                            <a href="{% url 'post_detail' post.slug %}" class="text-decoration-none text-dark">
+                                {{ post.title }}
+                            </a>
+                        </h5>
+                        <p class="card-text text-muted small">
+                            {{ post.excerpt|truncatewords:20 }}
+                        </p>
+                        <div class="mt-auto">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <small class="text-muted">
+                                    <i class="bi bi-person"></i> {{ post.author.username }}
+                                </small>
+                                <small class="text-muted">
+                                    <i class="bi bi-clock"></i> {{ post.created_at|date:"d M Y" }}
+                                </small>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center">
+                                {% if post.category %}
+                                <span class="badge bg-primary">{{ post.category.name }}</span>
+                                {% endif %}
+                                <small class="text-muted">
+                                    <i class="bi bi-eye"></i> {{ post.views_count }} vistas
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        
+        <!-- Pagination -->
+        {% if posts.has_other_pages %}
+        <nav aria-label="Paginación" class="mt-4">
+            <ul class="pagination justify-content-center">
+                {% if posts.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ posts.previous_page_number }}{% if query %}&q={{ query }}{% endif %}{% if current_category %}&category={{ current_category }}{% endif %}">
+                        Anterior
+                    </a>
+                </li>
+                {% endif %}
+                
+                <li class="page-item active">
+                    <span class="page-link">
+                        Página {{ posts.number }} de {{ posts.paginator.num_pages }}
+                    </span>
+                </li>
+                
+                {% if posts.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ posts.next_page_number }}{% if query %}&q={{ query }}{% endif %}{% if current_category %}&category={{ current_category }}{% endif %}">
+                        Siguiente
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+        
+        {% else %}
+        <div class="alert alert-info">
+            <i class="bi bi-info-circle"></i> No se encontraron publicaciones.
+            {% if query %}
+                <a href="{% url 'post_list' %}" class="alert-link">Ver todas las publicaciones</a>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+    
+    <!-- Sidebar -->
+    <div class="col-lg-4">
+        <!-- Recent Posts -->
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="bi bi-clock-history"></i> Recientes</h5>
+            </div>
+            <div class="list-group list-group-flush">
+                {% for post in recent_posts %}
+                <a href="{% url 'post_detail' post.slug %}" class="list-group-item list-group-item-action">
+                    <div class="d-flex w-100 justify-content-between">
+                        <h6 class="mb-1">{{ post.title|truncatewords:5 }}</h6>
+                        <small class="text-muted">{{ post.views_count }} <i class="bi bi-eye"></i></small>
+                    </div>
+                    <small class="text-muted">{{ post.created_at|date:"d M" }}</small>
+                </a>
+                {% empty %}
+                <div class="list-group-item">
+                    <small class="text-muted">No hay publicaciones recientes</small>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <!-- Popular Tags -->
+        {% if popular_tags %}
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0"><i class="bi bi-tags"></i> Etiquetas Populares</h5>
+            </div>
+            <div class="card-body">
+                {% for tag in popular_tags %}
+                <a href="?tag={{ tag.slug }}" class="btn btn-sm btn-outline-secondary mb-2">
+                    {{ tag.name }} ({{ tag.post_count }})
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

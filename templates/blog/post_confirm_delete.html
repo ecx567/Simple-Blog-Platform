@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+
+{% block title %}Confirmar Eliminación - Blog Platform{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card shadow">
+            <div class="card-header bg-danger text-white">
+                <h4 class="mb-0"><i class="bi bi-exclamation-triangle"></i> Confirmar Eliminación</h4>
+            </div>
+            <div class="card-body">
+                <h5 class="card-title">¿Estás seguro de que deseas eliminar esta publicación?</h5>
+                
+                <div class="alert alert-warning" role="alert">
+                    <strong>Título:</strong> {{ post.title }}
+                </div>
+                
+                <p class="text-muted">
+                    Esta acción no se puede deshacer. Se eliminarán:
+                </p>
+                
+                <ul>
+                    <li>La publicación completa</li>
+                    <li>{{ post.comment_count }} comentario(s)</li>
+                    <li>Todas las estadísticas ({{ post.views_count }} vistas)</li>
+                    {% if post.featured_image %}
+                    <li>La imagen destacada</li>
+                    {% endif %}
+                </ul>
+                
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="d-flex gap-2 justify-content-end">
+                        <a href="{% url 'post_detail' post.slug %}" class="btn btn-secondary">
+                            <i class="bi bi-x-circle"></i> Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-danger">
+                            <i class="bi bi-trash"></i> Confirmar Eliminación
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

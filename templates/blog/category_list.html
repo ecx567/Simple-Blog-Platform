@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+
+{% block title %}Categorías - Blog Platform{% endblock %}
+
+{% block content %}
+<h1 class="mb-4"><i class="bi bi-folder"></i> Categorías</h1>
+
+<p class="lead text-muted">Explora las publicaciones por categoría</p>
+
+<div class="row g-4">
+    {% for category in categories %}
+    <div class="col-md-4">
+        <div class="card h-100 shadow-sm hover-shadow">
+            <div class="card-body">
+                <h5 class="card-title">
+                    <i class="bi bi-folder2-open text-primary"></i>
+                    {{ category.name }}
+                </h5>
+                {% if category.description %}
+                <p class="card-text text-muted">{{ category.description }}</p>
+                {% endif %}
+                <div class="d-flex justify-content-between align-items-center mt-3">
+                    <span class="badge bg-primary">{{ category.post_count }} publicacion{{ category.post_count|pluralize:"es" }}</span>
+                    <a href="{% url 'post_list' %}?category={{ category.slug }}" class="btn btn-sm btn-outline-primary">
+                        Ver publicaciones <i class="bi bi-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12">
+        <div class="alert alert-info text-center">
+            <i class="bi bi-info-circle fs-1"></i>
+            <p class="mb-0">No hay categorías disponibles aún.</p>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Popular Categories Section -->
+{% if popular_categories %}
+<div class="mt-5">
+    <h3 class="mb-4"><i class="bi bi-star"></i> Categorías Populares</h3>
+    <div class="row g-3">
+        {% for category in popular_categories %}
+        <div class="col-md-3">
+            <a href="{% url 'post_list' %}?category={{ category.slug }}" 
+               class="text-decoration-none">
+                <div class="card bg-light">
+                    <div class="card-body text-center">
+                        <h4 class="text-primary">{{ category.post_count }}</h4>
+                        <small class="text-muted">{{ category.name }}</small>
+                    </div>
+                </div>
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.hover-shadow {
+    transition: box-shadow 0.3s ease-in-out;
+}
+.hover-shadow:hover {
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+}
+</style>
+{% endblock %}
