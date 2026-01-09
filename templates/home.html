@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+
+{% block title %}Inicio - Blog Platform{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <!-- Hero Section -->
+        <div class="text-center py-5">
+            <h1 class="display-4 fw-bold">¡Bienvenido a Blog Platform!</h1>
+            <p class="lead text-muted">
+                Tu espacio para compartir ideas, historias y conocimientos con el mundo.
+            </p>
+            {% if not user.is_authenticated %}
+            <div class="d-grid gap-2 d-sm-flex justify-content-sm-center mt-4">
+                <a href="{% url 'register' %}" class="btn btn-primary btn-lg px-4 gap-3">
+                    <i class="bi bi-person-plus"></i> Comenzar Ahora
+                </a>
+                <a href="{% url 'login' %}" class="btn btn-outline-secondary btn-lg px-4">
+                    <i class="bi bi-box-arrow-in-right"></i> Iniciar Sesión
+                </a>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Features -->
+        <div class="row g-4 py-5">
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body text-center">
+                        <i class="bi bi-pencil-square display-4 text-primary mb-3"></i>
+                        <h5 class="card-title">Escribe y Publica</h5>
+                        <p class="card-text text-muted">
+                            Crea publicaciones con un editor intuitivo y compártelas con la comunidad.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body text-center">
+                        <i class="bi bi-shield-check display-4 text-success mb-3"></i>
+                        <h5 class="card-title">Seguro y Confiable</h5>
+                        <p class="card-text text-muted">
+                            Tu información está protegida con encriptación de nivel empresarial.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body text-center">
+                        <i class="bi bi-people display-4 text-info mb-3"></i>
+                        <h5 class="card-title">Comunidad Activa</h5>
+                        <p class="card-text text-muted">
+                            Conecta con otros autores y lectores apasionados.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Latest Posts Section (placeholder) -->
+        <div class="py-5">
+            <h2 class="mb-4">Últimas Publicaciones</h2>
+            <div class="alert alert-info">
+                <i class="bi bi-info-circle"></i> Las publicaciones aparecerán aquí una vez que los usuarios comiencen a escribir.
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

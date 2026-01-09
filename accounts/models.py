@@ -175,4 +175,3 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     def can_publish(self):
         """Verifica si el usuario puede publicar posts."""
         return self.is_author or self.is_admin
-

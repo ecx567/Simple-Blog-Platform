@@ -249,4 +249,3 @@ def home(request):
     Vista de la página de inicio.
     """
     return render(request, 'home.html')
-

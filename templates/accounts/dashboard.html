@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - Blog Platform{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <h1 class="mb-4">
+            <i class="bi bi-speedometer2"></i> Dashboard
+        </h1>
+        
+        <!-- Welcome Card -->
+        <div class="card mb-4 bg-primary text-white">
+            <div class="card-body">
+                <h4>¡Bienvenido, {{ user.get_full_name }}!</h4>
+                <p class="mb-0">
+                    <i class="bi bi-shield-check"></i> Rol: 
+                    <span class="badge bg-light text-dark">{{ user.get_role_display }}</span>
+                </p>
+            </div>
+        </div>
+        
+        <!-- Stats Cards -->
+        <div class="row g-4 mb-4">
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <i class="bi bi-file-text"></i> Mis Publicaciones
+                        </h5>
+                        <h2 class="mb-0">{{ total_posts }}</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <i class="bi bi-chat-dots"></i> Mis Comentarios
+                        </h5>
+                        <h2 class="mb-0">{{ total_comments }}</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <i class="bi bi-calendar-check"></i> Miembro desde
+                        </h5>
+                        <p class="mb-0">{{ user.date_joined|date:"d M Y" }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Quick Actions -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-lightning"></i> Acciones Rápidas</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2 d-md-flex">
+                    {% if user.can_publish %}
+                    <a href="#" class="btn btn-primary">
+                        <i class="bi bi-plus-circle"></i> Nueva Publicación
+                    </a>
+                    {% endif %}
+                    <a href="{% url 'profile' %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-person"></i> Ver Perfil
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
