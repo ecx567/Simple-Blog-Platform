@@ -40,6 +40,13 @@
                                 <i class="bi bi-speedometer2"></i> Dashboard
                             </a>
                         </li>
+                        {% if user.is_admin %}
+                        <li class="nav-item">
+                            <a class="nav-link text-warning" href="{% url 'admin_panel:dashboard' %}">
+                                <i class="bi bi-shield-lock"></i> Admin Panel
+                            </a>
+                        </li>
+                        {% endif %}
                         {% if user.can_publish %}
                         <li class="nav-item">
                             <a class="nav-link" href="{% url 'post_create' %}">

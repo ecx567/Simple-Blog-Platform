@@ -13,8 +13,11 @@ handler404 = views.handler404
 handler500 = views.handler500
 
 urlpatterns = [
-    # Admin
+    # Admin Django
     path('admin/', admin.site.urls),
+    
+    # Admin Panel Personalizado (solo para administradores)
+    path('admin-panel/', include('admin_panel.urls')),
     
     # Home
     path('', account_views.home, name='home'),

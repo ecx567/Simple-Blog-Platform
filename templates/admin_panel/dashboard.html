@@ -1,0 +1,242 @@
+{% extends 'base.html' %}
+
+{% block title %}Panel de Administración - Blog Platform{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col">
+        <h1><i class="bi bi-shield-lock"></i> Panel de Administración</h1>
+        <p class="text-muted">Sistema de monitoreo y gestión del blog</p>
+    </div>
+    <div class="col-auto">
+        <a href="{% url 'admin_panel:logs' %}" class="btn btn-primary">
+            <i class="bi bi-file-text"></i> Ver Logs
+        </a>
+        <a href="{% url 'admin_panel:system_status' %}" class="btn btn-info">
+            <i class="bi bi-info-circle"></i> Estado del Sistema
+        </a>
+    </div>
+</div>
+
+<!-- Estadísticas de Usuarios -->
+<div class="row mb-4">
+    <div class="col-md-12">
+        <h3><i class="bi bi-people"></i> Usuarios</h3>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center bg-primary text-white">
+            <div class="card-body">
+                <h2>{{ total_users }}</h2>
+                <p class="mb-0">Total Usuarios</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center bg-success text-white">
+            <div class="card-body">
+                <h2>{{ active_users }}</h2>
+                <p class="mb-0">Activos</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2">
+        <div class="card text-center bg-danger text-white">
+            <div class="card-body">
+                <h4>{{ admins }}</h4>
+                <p class="mb-0 small">Admins</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2">
+        <div class="card text-center bg-warning text-dark">
+            <div class="card-body">
+                <h4>{{ authors }}</h4>
+                <p class="mb-0 small">Autores</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2">
+        <div class="card text-center bg-info text-white">
+            <div class="card-body">
+                <h4>{{ readers }}</h4>
+                <p class="mb-0 small">Lectores</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Estadísticas de Contenido -->
+<div class="row mb-4">
+    <div class="col-md-12">
+        <h3><i class="bi bi-file-text"></i> Contenido</h3>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h2>{{ total_posts }}</h2>
+                <p class="mb-0">Total Posts</p>
+                <small class="text-muted">{{ published_posts }} publicados, {{ draft_posts }} borradores</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h2>{{ total_comments }}</h2>
+                <p class="mb-0">Total Comentarios</p>
+                <small class="text-muted">{{ approved_comments }} aprobados, {{ pending_comments }} pendientes</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h2>{{ total_categories }}</h2>
+                <p class="mb-0">Categorías</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h2>{{ total_tags }}</h2>
+                <p class="mb-0">Etiquetas</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Actividad Reciente -->
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="bi bi-graph-up"></i> Posts Más Vistos</h5>
+            </div>
+            <div class="card-body">
+                <table class="table table-sm">
+                    <thead>
+                        <tr>
+                            <th>Título</th>
+                            <th>Autor</th>
+                            <th class="text-end">Vistas</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for post in top_posts %}
+                        <tr>
+                            <td>
+                                <a href="{% url 'post_detail' post.slug %}" target="_blank">
+                                    {{ post.title|truncatewords:5 }}
+                                </a>
+                            </td>
+                            <td>{{ post.author.username }}</td>
+                            <td class="text-end"><span class="badge bg-info">{{ post.views_count }}</span></td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="3" class="text-muted text-center">No hay posts aún</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0"><i class="bi bi-file-earmark-text"></i> Archivos de Log</h5>
+            </div>
+            <div class="card-body">
+                {% if log_files %}
+                <table class="table table-sm">
+                    <thead>
+                        <tr>
+                            <th>Archivo</th>
+                            <th>Tamaño</th>
+                            <th>Última Modificación</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for log in log_files %}
+                        <tr>
+                            <td>
+                                <a href="{% url 'admin_panel:logs' %}?type={{ log.name|slice:"-4" }}">
+                                    <i class="bi bi-file-earmark"></i> {{ log.name }}
+                                </a>
+                            </td>
+                            <td>{{ log.size_mb }} MB</td>
+                            <td><small>{{ log.modified|date:"d/m/Y H:i" }}</small></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <p class="text-muted">No hay archivos de log disponibles.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Métricas Adicionales -->
+<div class="row">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body text-center">
+                <i class="bi bi-person-plus fs-1 text-success"></i>
+                <h3 class="mt-2">{{ recent_users }}</h3>
+                <p class="text-muted mb-0">Nuevos usuarios (7 días)</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body text-center">
+                <i class="bi bi-check-circle fs-1 text-success"></i>
+                <h3 class="mt-2">{{ approved_comments }}</h3>
+                <p class="text-muted mb-0">Comentarios aprobados</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body text-center">
+                <i class="bi bi-hourglass-split fs-1 text-warning"></i>
+                <h3 class="mt-2">{{ pending_comments }}</h3>
+                <p class="text-muted mb-0">Comentarios pendientes</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Accesos Rápidos -->
+<div class="row mt-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-lightning"></i> Accesos Rápidos</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-flex gap-2 flex-wrap">
+                    <a href="/admin/" class="btn btn-outline-primary">
+                        <i class="bi bi-gear"></i> Admin Django
+                    </a>
+                    <a href="{% url 'admin_panel:logs' %}?type=error" class="btn btn-outline-danger">
+                        <i class="bi bi-exclamation-triangle"></i> Logs de Errores
+                    </a>
+                    <a href="{% url 'admin_panel:logs' %}?type=security" class="btn btn-outline-warning">
+                        <i class="bi bi-shield-check"></i> Logs de Seguridad
+                    </a>
+                    <a href="{% url 'admin_panel:system_status' %}" class="btn btn-outline-info">
+                        <i class="bi bi-cpu"></i> Estado del Sistema
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

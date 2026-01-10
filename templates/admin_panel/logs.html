@@ -1,0 +1,301 @@
+{% extends 'base.html' %}
+
+{% block title %}Visualizador de Logs - Blog Platform{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col">
+        <h1><i class="bi bi-file-text"></i> Visualizador de Logs</h1>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'admin_panel:dashboard' %}">Admin Panel</a></li>
+                <li class="breadcrumb-item active">Logs</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<!-- Selector de Tipo de Log y Filtros -->
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body">
+                <form method="get" class="row g-3">
+                    <!-- Tipo de Log -->
+                    <div class="col-md-3">
+                        <label class="form-label">Tipo de Log</label>
+                        <select name="type" class="form-select" onchange="this.form.submit()">
+                            {% for log in log_types %}
+                            <option value="{{ log }}" {% if log == log_type %}selected{% endif %}>
+                                {{ log|title }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <!-- Nivel -->
+                    <div class="col-md-2">
+                        <label class="form-label">Nivel</label>
+                        <select name="level" class="form-select" onchange="this.form.submit()">
+                            <option value="">Todos</option>
+                            <option value="DEBUG" {% if level_filter == 'DEBUG' %}selected{% endif %}>DEBUG</option>
+                            <option value="INFO" {% if level_filter == 'INFO' %}selected{% endif %}>INFO</option>
+                            <option value="WARNING" {% if level_filter == 'WARNING' %}selected{% endif %}>WARNING</option>
+                            <option value="ERROR" {% if level_filter == 'ERROR' %}selected{% endif %}>ERROR</option>
+                            <option value="CRITICAL" {% if level_filter == 'CRITICAL' %}selected{% endif %}>CRITICAL</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Búsqueda -->
+                    <div class="col-md-5">
+                        <label class="form-label">Buscar</label>
+                        <input type="text" name="q" class="form-control" 
+                               placeholder="Buscar en logs..." value="{{ search_query }}">
+                    </div>
+                    
+                    <!-- Botones -->
+                    <div class="col-md-2">
+                        <label class="form-label">&nbsp;</label>
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-search"></i>
+                            </button>
+                            <a href="{% url 'admin_panel:logs' %}?type={{ log_type }}" class="btn btn-secondary">
+                                <i class="bi bi-x"></i>
+                            </a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Estadísticas de Logs -->
+<div class="row mb-3">
+    <div class="col-md-2">
+        <div class="card text-center">
+            <div class="card-body py-2">
+                <h5 class="mb-0">{{ log_stats.total }}</h5>
+                <small class="text-muted">Total</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2">
+        <div class="card text-center bg-danger text-white">
+            <div class="card-body py-2">
+                <h5 class="mb-0">{{ log_stats.error }}</h5>
+                <small>ERROR</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2">
+        <div class="card text-center bg-warning text-dark">
+            <div class="card-body py-2">
+                <h5 class="mb-0">{{ log_stats.warning }}</h5>
+                <small>WARNING</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2">
+        <div class="card text-center bg-info text-white">
+            <div class="card-body py-2">
+                <h5 class="mb-0">{{ log_stats.info }}</h5>
+                <small>INFO</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2">
+        <div class="card text-center bg-secondary text-white">
+            <div class="card-body py-2">
+                <h5 class="mb-0">{{ log_stats.debug }}</h5>
+                <small>DEBUG</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2">
+        <div class="dropdown">
+            <button class="btn btn-primary dropdown-toggle w-100" type="button" 
+                    data-bs-toggle="dropdown">
+                <i class="bi bi-three-dots-vertical"></i> Acciones
+            </button>
+            <ul class="dropdown-menu">
+                <li>
+                    <a class="dropdown-item" href="{% url 'admin_panel:download_log' log_type %}">
+                        <i class="bi bi-download"></i> Descargar Log
+                    </a>
+                </li>
+                <li><hr class="dropdown-divider"></li>
+                <li>
+                    <a class="dropdown-item text-danger" href="#" 
+                       onclick="confirmClearLog('{{ log_type }}'); return false;">
+                        <i class="bi bi-trash"></i> Limpiar Log
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<!-- Tabla de Logs -->
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover">
+                        <thead>
+                            <tr>
+                                <th style="width: 80px;">Nivel</th>
+                                <th style="width: 180px;">Timestamp</th>
+                                <th style="width: 120px;">Módulo</th>
+                                <th>Mensaje</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for entry in log_entries %}
+                            <tr class="log-entry log-{{ entry.level|lower }}">
+                                <td>
+                                    {% if entry.level == 'ERROR' or entry.level == 'CRITICAL' %}
+                                    <span class="badge bg-danger">{{ entry.level }}</span>
+                                    {% elif entry.level == 'WARNING' %}
+                                    <span class="badge bg-warning text-dark">{{ entry.level }}</span>
+                                    {% elif entry.level == 'INFO' %}
+                                    <span class="badge bg-info">{{ entry.level }}</span>
+                                    {% elif entry.level == 'DEBUG' %}
+                                    <span class="badge bg-secondary">{{ entry.level }}</span>
+                                    {% else %}
+                                    <span class="badge bg-light text-dark">{{ entry.level }}</span>
+                                    {% endif %}
+                                </td>
+                                <td><small class="font-monospace">{{ entry.timestamp }}</small></td>
+                                <td><small class="text-muted">{{ entry.module }}</small></td>
+                                <td>
+                                    <div class="log-message">
+                                        {{ entry.message }}
+                                    </div>
+                                    {% if entry.raw %}
+                                    <details class="mt-1">
+                                        <summary class="text-muted" style="cursor: pointer;">
+                                            <small>Ver detalles completos</small>
+                                        </summary>
+                                        <pre class="bg-light p-2 mt-2 small"><code>{{ entry.raw }}</code></pre>
+                                    </details>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="4" class="text-center text-muted py-4">
+                                    <i class="bi bi-info-circle fs-3"></i>
+                                    <p class="mt-2">No se encontraron entradas de log con los filtros aplicados.</p>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Paginación -->
+                {% if log_entries.has_other_pages %}
+                <nav aria-label="Paginación de logs" class="mt-3">
+                    <ul class="pagination justify-content-center">
+                        {% if log_entries.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?type={{ log_type }}&page=1{% if search_query %}&q={{ search_query }}{% endif %}{% if level_filter %}&level={{ level_filter }}{% endif %}">
+                                Primera
+                            </a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?type={{ log_type }}&page={{ log_entries.previous_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if level_filter %}&level={{ level_filter }}{% endif %}">
+                                Anterior
+                            </a>
+                        </li>
+                        {% endif %}
+                        
+                        <li class="page-item active">
+                            <span class="page-link">
+                                Página {{ log_entries.number }} de {{ log_entries.paginator.num_pages }}
+                            </span>
+                        </li>
+                        
+                        {% if log_entries.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?type={{ log_type }}&page={{ log_entries.next_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if level_filter %}&level={{ level_filter }}{% endif %}">
+                                Siguiente
+                            </a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?type={{ log_type }}&page={{ log_entries.paginator.num_pages }}{% if search_query %}&q={{ search_query }}{% endif %}{% if level_filter %}&level={{ level_filter }}{% endif %}">
+                                Última
+                            </a>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.log-message {
+    font-family: 'Courier New', monospace;
+    font-size: 0.9rem;
+    word-break: break-word;
+}
+
+.log-error {
+    background-color: #fff5f5;
+}
+
+.log-warning {
+    background-color: #fff9e6;
+}
+
+details summary {
+    user-select: none;
+}
+
+details summary:hover {
+    color: #0d6efd;
+}
+
+pre code {
+    color: #333;
+    font-size: 0.85rem;
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function confirmClearLog(logType) {
+    if (confirm('¿Estás seguro de que deseas limpiar este log? Se creará un backup antes de limpiarlo.')) {
+        fetch(`/admin-panel/logs/clear/${logType}/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'Content-Type': 'application/json',
+            },
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert(data.message);
+                location.reload();
+            } else {
+                alert('Error: ' + (data.error || data.message));
+            }
+        })
+        .catch(error => {
+            alert('Error al limpiar el log: ' + error);
+        });
+    }
+}
+</script>
+{% endblock %}
