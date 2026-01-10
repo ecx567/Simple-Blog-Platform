@@ -17,11 +17,13 @@ from django.utils.encoding import force_bytes, force_str
 from django.contrib.auth.tokens import default_token_generator
 from django.urls import reverse
 from django.conf import settings
+from django_ratelimit.decorators import ratelimit
 
 from .forms import RegistrationForm, LoginForm
 from .models import CustomUser
 
 
+@ratelimit(key='ip', rate='5/m', method='POST', block=True)
 def register(request):
     """
     Vista de registro de nuevos usuarios.
@@ -31,6 +33,8 @@ def register(request):
     2. Se crea usuario inactivo
     3. Se envía email de verificación
     4. Usuario debe verificar email para activar cuenta
+    
+    Rate limit: 5 intentos por minuto por IP
     """
     if request.user.is_authenticated:
         return redirect('dashboard')
@@ -137,6 +141,7 @@ def verify_email(request, uidb64, token):
         return redirect('register')
 
 
+@ratelimit(key='ip', rate='10/m', method='POST', block=True)
 def login_view(request):
     """
     Vista de inicio de sesión.
@@ -146,6 +151,8 @@ def login_view(request):
     2. Verificar que la cuenta esté activa
     3. Crear sesión
     4. Redirigir a dashboard
+    
+    Rate limit: 10 intentos por minuto por IP
     """
     if request.user.is_authenticated:
         return redirect('dashboard')

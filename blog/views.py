@@ -11,6 +11,7 @@ from django.contrib import messages
 from django.core.paginator import Paginator
 from django.db.models import Q, Count, F
 from django.http import HttpResponseForbidden
+from django_ratelimit.decorators import ratelimit
 from accounts.decorators import author_required
 from .models import Post, Category, Tag, Comment
 from .forms import PostForm, CommentForm, PostSearchForm
@@ -70,9 +71,11 @@ def post_list(request):
     return render(request, 'blog/post_list.html', context)
 
 
+@ratelimit(key='user_or_ip', rate='10/h', method='POST', block=True)
 def post_detail(request, slug):
     """
     Detalle de una publicación con comentarios.
+    Rate limit: 10 comentarios por hora por usuario o IP.
     """
     post = get_object_or_404(
         Post.objects.select_related('author', 'category').prefetch_related('tags'),
@@ -275,8 +278,11 @@ def category_list(request):
         post_count=Count('posts', filter=Q(posts__status='published'))
     ).filter(post_count__gt=0)
     
+    popular_categories = categories.order_by('-post_count')[:4]
+    
     return render(request, 'blog/category_list.html', {
-        'categories': categories
+        'categories': categories,
+        'popular_categories': popular_categories,
     })
 
 
@@ -286,8 +292,13 @@ def tag_list(request):
     """
     tags = Tag.objects.annotate(
         post_count=Count('posts', filter=Q(posts__status='published'))
-    ).filter(post_count__gt=0)
+    ).filter(post_count__gt=0).order_by('-post_count')
+    
+    max_count = tags.first().post_count if tags.exists() else 1
+    popular_tags = tags[:10]
     
     return render(request, 'blog/tag_list.html', {
-        'tags': tags
+        'tags': tags,
+        'popular_tags': popular_tags,
+        'max_count': max_count,
     })

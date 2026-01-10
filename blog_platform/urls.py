@@ -6,6 +6,11 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 from accounts import views as account_views
+from . import views
+
+# Handlers para errores HTTP
+handler404 = views.handler404
+handler500 = views.handler500
 
 urlpatterns = [
     # Admin
